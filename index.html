@@ -458,7 +458,8 @@
     $('vNotas').textContent = state.notas;
     $('vNotasWrap').hidden = !state.notas;
 
-    $('wa').href = `https://wa.me/${phoneAR(state.tel)}?text=${encodeURIComponent(waText())}`;
+    const waNum = phoneAR(state.tel);
+    $('wa').href = `https://wa.me/${waNum}?text=${encodeURIComponent(waText())}`;
     document.title = `Presupuesto ${state.num}${state.cliente ? ' - '+state.cliente : ''}`;
     save();
   }
