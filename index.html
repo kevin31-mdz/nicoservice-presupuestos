@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e4d64">
+<meta name="robots" content="noindex">
+<title>Presupuestos NicoService</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root{
+    --brand:#0e4d64; --accent:#ffb703;
+    --brand-2:color-mix(in srgb,var(--brand) 78%,#fff);
+    --tint:color-mix(in srgb,var(--brand) 9%,#fff);
+    --tint-2:color-mix(in srgb,var(--accent) 16%,#fff);
+    --bg:#f2f5f7; --card:#fff; --ink:#18232b; --muted:#66737d; --line:#dfe5ea;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:16px;grid-template-columns:1fr}
+  @media(min-width:980px){.wrap{grid-template-columns:420px 1fr;align-items:start}.panel{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}}
+  .panel{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);min-width:0}
+  .panel h2{margin:0 0 4px;font-size:18px;color:var(--brand)}
+  .panel .hint{margin:0 0 14px;color:var(--muted);font-size:13px}
+  fieldset{border:0;padding:0;margin:0 0 16px}
+  legend{font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-2);margin-bottom:8px}
+  label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
+  input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+  input[type=color]{padding:4px;height:44px}
+  textarea{resize:vertical;min-height:64px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--brand-2);outline-offset:-1px;border-color:transparent}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fafcfd}
+  .item .row3{display:grid;grid-template-columns:1.2fr .7fr 1.1fr auto;gap:8px;align-items:end}
+  .item label{margin-top:0}
+  .del{border:0;background:#fde8e8;color:#b42318;border-radius:10px;padding:10px 12px;cursor:pointer;font-size:15px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;padding:12px 14px;font:inherit;font-weight:600;cursor:pointer;text-decoration:none}
+  .btn-ghost{background:var(--tint);color:var(--brand);width:100%}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-wa{background:#25d366;color:#fff}
+  .btn-light{background:var(--tint);color:var(--brand)}
+  .btn-danger{background:#b42318;color:#fff}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+  .actions .full{grid-column:1/-1}
+
+  /* Mi negocio */
+  details.cfg{border:1px solid var(--line);border-radius:12px;margin-bottom:16px;background:var(--tint)}
+  details.cfg summary{cursor:pointer;padding:12px 14px;font-weight:700;color:var(--brand);list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details.cfg summary::-webkit-details-marker{display:none}
+  details.cfg summary::after{content:"▾";transition:transform .2s}
+  details.cfg[open] summary::after{transform:rotate(180deg)}
+  details.cfg .in{padding:0 14px 14px}
+  .logo-row{display:flex;gap:10px;align-items:center}
+  .logo-prev{width:52px;height:52px;border-radius:10px;background:#fff;border:1px solid var(--line);object-fit:contain;flex:none}
+  .small-btn{border:0;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+
+  /* ---------- Documento ---------- */
+  .doc{background:#fff;border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden;min-width:0}
+  .doc-head{background:var(--brand);color:#fff;padding:22px 26px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .brand{display:flex;gap:14px;align-items:center;min-width:0}
+  .brand img{width:64px;height:64px;border-radius:12px;background:#fff;object-fit:contain;padding:4px;flex:none}
+  .mono{width:64px;height:64px;border-radius:12px;background:var(--accent);color:var(--brand);display:grid;place-items:center;font-weight:900;font-size:24px;letter-spacing:-.02em;flex:none}
+  .brand h1{margin:0;font-size:22px}
+  .brand p{margin:2px 0 0;font-size:12px;opacity:.85}
+  .doc-id{text-align:right}
+  .doc-id .tag{display:inline-block;background:var(--accent);color:var(--brand);font-weight:800;font-size:12px;letter-spacing:.1em;padding:4px 10px;border-radius:6px}
+  .doc-id .num{font-size:18px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+  .doc-body{padding:24px 26px}
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:22px}
+  .meta>div{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .meta small{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+  .meta strong{font-size:15px}
+  .meta .valid strong{color:#b45309}
+  h3{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--brand-2);margin:0 0 10px}
+  .tbl{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+  th{background:var(--tint);color:var(--brand);text-align:left;padding:10px;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+  td.n,th.n{text-align:right;white-space:nowrap}
+  .totals{margin-left:auto;max-width:320px;margin-top:14px}
+  .totals div{display:flex;justify-content:space-between;padding:6px 0}
+  .totals .grand{border-top:2px solid var(--brand);margin-top:6px;padding-top:10px;font-size:20px;font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
+  .pay{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:22px 0}
+  .pay .box{border-radius:12px;padding:14px;background:var(--tint)}
+  .pay .box.b2{background:var(--tint-2)}
+  .pay small{color:var(--muted);font-size:12px}
+  .pay .amt{font-size:22px;font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
+  .notes{font-size:13px;color:#36434d;line-height:1.5;white-space:pre-line}
+  .terms{margin-top:18px;font-size:12px;color:var(--muted);line-height:1.5;white-space:pre-line}
+  .sign{display:flex;justify-content:space-between;gap:24px;margin-top:40px}
+  .sign div{flex:1;border-top:1px solid #9aa6b0;padding-top:6px;text-align:center;font-size:12px;color:var(--muted)}
+  .doc-foot{background:#f6f8fa;border-top:1px solid var(--line);padding:12px 26px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center}
+  .empty{color:var(--muted);font-style:italic}
+  [hidden]{display:none!important}
+  @media(max-width:560px){.doc-head,.doc-body{padding:18px}.pay{grid-template-columns:1fr}.item .row3{grid-template-columns:1fr 1fr}.doc-id{text-align:left}}
+
+  @media print{
+    @page{size:A4;margin:12mm}
+    body{background:#fff}
+    .panel{display:none!important}
+    .wrap{display:block;padding:0;max-width:none}
+    .doc{box-shadow:none;border-radius:0}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    tr{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ================= FORMULARIO ================= -->
+  <aside class="panel">
+    <h2>Nuevo presupuesto</h2>
+    <p class="hint">Completá a la izquierda, se arma solo a la derecha.</p>
+
+    <details class="cfg" id="cfgBox">
+      <summary>⚙️ Mi negocio</summary>
+      <div class="in">
+        <label for="bNombre">Nombre del negocio</label>
+        <input id="bNombre" placeholder="NicoService">
+        <label for="bRubros">Rubros (separados por coma)</label>
+        <input id="bRubros" placeholder="Electricidad, Plomería, Aire acondicionado">
+        <div class="row2">
+          <div><label for="bWa">WhatsApp</label><input id="bWa" inputmode="tel" placeholder="261 555 1234"></div>
+          <div><label for="bZona">Zona / dirección</label><input id="bZona" placeholder="Mendoza"></div>
+        </div>
+        <div class="row2">
+          <div><label for="bExtra">Instagram o email</label><input id="bExtra" placeholder="@nicoservice"></div>
+          <div><label for="bColor">Color de marca</label><input id="bColor" type="color" value="#0e4d64"></div>
+        </div>
+        <label for="bLogo">Logo</label>
+        <div class="logo-row">
+          <img id="bLogoPrev" class="logo-prev" alt="" hidden>
+          <input id="bLogo" type="file" accept="image/*">
+          <button class="small-btn" id="bLogoDel" type="button" hidden>Quitar</button>
+        </div>
+        <label for="bTerms">Condiciones (van al pie)</label>
+        <textarea id="bTerms"></textarea>
+      </div>
+    </details>
+
+    <fieldset>
+      <legend>Cliente</legend>
+      <label for="cliente">Nombre y apellido</label>
+      <input id="cliente" placeholder="Ej: María González">
+      <div class="row2">
+        <div><label for="tel">WhatsApp</label><input id="tel" inputmode="tel" placeholder="261 555 1234"></div>
+        <div><label for="dir">Dirección / obra</label><input id="dir" placeholder="Calle 123, Godoy Cruz"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Presupuesto</legend>
+      <div class="row2">
+        <div><label for="fecha">Fecha</label><input id="fecha" type="date"></div>
+        <div><label for="dias">Validez (días)</label><input id="dias" type="number" min="1" value="15"></div>
+      </div>
+      <label for="servicio">Rubro</label>
+      <input id="servicio" list="rubrosList" placeholder="Elegí o escribí">
+      <datalist id="rubrosList"></datalist>
+      <label for="trabajo">Descripción del trabajo</label>
+      <textarea id="trabajo" placeholder="Ej: Cambio de tablero eléctrico y colocación de disyuntor."></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>Detalle</legend>
+      <div id="items"></div>
+      <button class="btn btn-ghost" id="addItem" type="button">+ Agregar ítem</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Forma de pago</legend>
+      <div class="row2">
+        <div><label for="anticipo">Anticipo (%)</label><input id="anticipo" type="number" min="0" max="100" value="50"></div>
+        <div><label for="medio">Medio de pago</label>
+          <select id="medio"><option>Efectivo o transferencia</option><option>Transferencia</option><option>Efectivo</option><option>Mercado Pago</option></select>
+        </div>
+      </div>
+      <label for="plazo">Plazo estimado de ejecución</label>
+      <input id="plazo" placeholder="Ej: 2 días hábiles">
+      <label for="notas">Observaciones</label>
+      <textarea id="notas" placeholder="Ej: No incluye materiales de terminación."></textarea>
+    </fieldset>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="print" type="button">🖨️ Descargar PDF</button>
+      <a class="btn btn-wa" id="wa" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <button class="btn btn-light full" id="nuevo" type="button">Empezar uno nuevo</button>
+    </div>
+  </aside>
+
+  <!-- ================= DOCUMENTO ================= -->
+  <main class="doc" id="doc">
+    <header class="doc-head">
+      <div class="brand">
+        <img id="vLogo" alt="" hidden>
+        <div id="vMono" class="mono">NS</div>
+        <div>
+          <h1 id="vNegocio">NicoService</h1>
+          <p id="vRubros"></p>
+        </div>
+      </div>
+      <div class="doc-id">
+        <span class="tag">PRESUPUESTO</span>
+        <div class="num" id="vNum">N° —</div>
+      </div>
+    </header>
+
+    <section class="doc-body">
+      <div class="meta">
+        <div><small>Cliente</small><strong id="vCliente">—</strong><div id="vClienteExtra" style="font-size:12px;color:var(--muted)"></div></div>
+        <div><small>Fecha</small><strong id="vFecha">—</strong></div>
+        <div class="valid"><small>Válido hasta</small><strong id="vValidez">—</strong></div>
+        <div><small>Rubro</small><strong id="vServicio">—</strong></div>
+      </div>
+
+      <div id="vTrabajoWrap" style="margin-bottom:20px">
+        <h3>Trabajo a realizar</h3>
+        <div class="notes" id="vTrabajo"></div>
+      </div>
+
+      <h3>Detalle</h3>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>Descripción</th><th class="n">Cant.</th><th class="n">P. unit.</th><th class="n">Subtotal</th></tr></thead>
+          <tbody id="vItems"></tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div class="grand"><span>Total</span><span id="vTotal">$ 0</span></div>
+      </div>
+
+      <h3 style="margin-top:22px">Forma de pago</h3>
+      <div class="pay">
+        <div class="box"><small id="vLblA">50% al inicio del trabajo</small><div class="amt" id="vAnt">$ 0</div></div>
+        <div class="box b2"><small id="vLblB">50% al finalizar</small><div class="amt" id="vSal">$ 0</div></div>
+      </div>
+      <div class="notes" id="vPagoExtra"></div>
+
+      <div id="vNotasWrap" style="margin-top:18px">
+        <h3>Observaciones</h3>
+        <div class="notes" id="vNotas"></div>
+      </div>
+
+      <p class="terms" id="vTerms"></p>
+
+      <div class="sign"><div id="vFirma">NicoService</div><div>Conformidad del cliente</div></div>
+    </section>
+
+    <footer class="doc-foot" id="vFoot"></footer>
+  </main>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEY = 'ns_presupuesto_borrador', SEQ = 'ns_presupuesto_seq', BIZ = 'ns_negocio';
+  const DEFAULT_TERMS = 'Los precios pueden ajustarse si el presupuesto se acepta después de la fecha de validez.\nCualquier trabajo adicional no detallado se presupuesta por separado.';
+  const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Math.round(n||0));
+  const pad = n => String(n).padStart(2,'0');
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const parseISO = s => { const [y,m,d] = (s||'').split('-').map(Number); return y ? new Date(y,m-1,d) : null; };
+  const fmtDate = d => d ? d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+  const store = {
+    get(k){ try{ return localStorage.getItem(k) }catch(e){ return null } },
+    set(k,v){ try{ localStorage.setItem(k,v); return true }catch(e){ return false } }
+  };
+  /* ---------- Montos con separador de miles (formato AR: 1.234.567,50) ---------- */
+  // Recibe texto crudo y devuelve "1.234.567" o "1.234,5" (máx. 2 decimales)
+  function fmtMoneyInput(raw){
+    let s = String(raw).replace(/[^\d,]/g,'');
+    const i = s.indexOf(',');
+    let int = i >= 0 ? s.slice(0,i) : s;
+    let dec = i >= 0 ? s.slice(i+1).replace(/,/g,'').slice(0,2) : null;
+    int = int.replace(/^0+(?=\d)/,'');
+    int = int.replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+    return dec !== null ? `${int || '0'},${dec}` : int;
+  }
+  const parseMoney = s => parseFloat(String(s).replace(/\./g,'').replace(',','.')) || 0;
+  // Formatea mientras se escribe, manteniendo el cursor en su lugar
+  function formatLive(inp){
+    const pos = inp.selectionStart ?? inp.value.length;
+    const before = inp.value.slice(0,pos).replace(/[^\d,]/g,'').length;
+    const out = fmtMoneyInput(inp.value);
+    inp.value = out;
+    let n = 0, p = 0;
+    while(p < out.length && n < before){ if(/[\d,]/.test(out[p])) n++; p++; }
+    try{ inp.setSelectionRange(p,p) }catch(e){}
+  }
+
+  const phoneAR = raw => {
+    let p = (raw||'').replace(/\D/g,'');
+    if(p && !p.startsWith('54')) p = '549' + p.replace(/^0/,'').replace(/^(\d{3,4})15/,'$1');
+    return p;
+  };
+
+  /* ---------- Negocio ---------- */
+  let biz;
+  function loadBiz(){
+    try{ biz = JSON.parse(store.get(BIZ)) }catch(e){ biz = null }
+    biz = Object.assign({ nombre:'NicoService', rubros:'Electricidad, Plomería, Aire acondicionado, Mantenimiento general',
+      wa:'', zona:'Mendoza', extra:'', color:'#0e4d64', logo:'', terms:DEFAULT_TERMS }, biz||{});
+  }
+  const saveBiz = () => store.set(BIZ, JSON.stringify(biz));
+  const bizFields = {bNombre:'nombre', bRubros:'rubros', bWa:'wa', bZona:'zona', bExtra:'extra', bColor:'color', bTerms:'terms'};
+  const rubrosArr = () => biz.rubros.split(',').map(s => s.trim()).filter(Boolean);
+
+  function fillBiz(){
+    Object.entries(bizFields).forEach(([id,k]) => $(id).value = biz[k] || '');
+    $('bLogoPrev').src = biz.logo || ''; $('bLogoPrev').hidden = !biz.logo; $('bLogoDel').hidden = !biz.logo;
+    if(!biz.wa) $('cfgBox').open = true;   // primera vez: abrir para configurar
+  }
+
+  function renderBiz(){
+    document.documentElement.style.setProperty('--brand', biz.color || '#0e4d64');
+    document.querySelector('meta[name=theme-color]').content = biz.color || '#0e4d64';
+    const name = biz.nombre || 'Mi negocio';
+    $('vNegocio').textContent = name;
+    $('vFirma').textContent = name;
+    $('vRubros').textContent = rubrosArr().join(' · ');
+    $('vLogo').src = biz.logo || ''; $('vLogo').hidden = !biz.logo;
+    $('vMono').hidden = !!biz.logo;
+    $('vMono').textContent = name.replace(/([a-z])([A-Z])/g,'$1 $2').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    $('vTerms').textContent = biz.terms;
+    const foot = $('vFoot'); foot.innerHTML = '';
+    [biz.zona && '📍 '+biz.zona, biz.wa && '💬 WhatsApp '+biz.wa, biz.extra && (biz.extra.includes('@') && !biz.extra.startsWith('@') ? '✉️ ' : '📸 ')+biz.extra]
+      .filter(Boolean).forEach(t => { const s = document.createElement('span'); s.textContent = t; foot.appendChild(s); });
+    const dl = $('rubrosList'); dl.innerHTML = '';
+    rubrosArr().concat('Varios').forEach(r => { const o = document.createElement('option'); o.value = r; dl.appendChild(o); });
+  }
+
+  Object.entries(bizFields).forEach(([id,k]) => $(id).addEventListener('input', () => { biz[k] = $(id).value; saveBiz(); renderBiz(); update(); }));
+
+  $('bLogo').addEventListener('change', e => {
+    const f = e.target.files[0]; if(!f) return;
+    const img = new Image(), url = URL.createObjectURL(f);
+    img.onload = () => {
+      const max = 256, s = Math.min(1, max/Math.max(img.width,img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width*s); c.height = Math.round(img.height*s);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      biz.logo = c.toDataURL('image/png'); URL.revokeObjectURL(url);
+      saveBiz(); fillBiz(); renderBiz();
+    };
+    img.src = url;
+  });
+  $('bLogoDel').onclick = () => { biz.logo = ''; $('bLogo').value = ''; saveBiz(); fillBiz(); renderBiz(); };
+
+  /* ---------- Presupuesto ---------- */
+  let state = null;
+  function nextNumber(){
+    const n = (parseInt(store.get(SEQ)||'0',10) || 0) + 1;
+    store.set(SEQ, String(n));
+    return `${new Date().getFullYear()}-${String(n).padStart(4,'0')}`;
+  }
+  function blank(){
+    return { num: nextNumber(), cliente:'', tel:'', dir:'', fecha: toISO(new Date()), dias:15,
+      servicio: rubrosArr()[0] || '', trabajo:'', anticipo:50, medio:'Efectivo o transferencia', plazo:'', notas:'',
+      items:[{desc:'Mano de obra',cant:1,unidad:'',precio:0},{desc:'Materiales',cant:1,unidad:'',precio:0}] };
+  }
+  function load(){
+    try{ state = JSON.parse(store.get(KEY)) }catch(e){ state = null }
+    if(!state || !state.items) state = blank();
+  }
+  const save = () => store.set(KEY, JSON.stringify(state));
+  const fields = ['cliente','tel','dir','fecha','dias','servicio','trabajo','anticipo','medio','plazo','notas'];
+
+  function fillForm(){ fields.forEach(f => $(f).value = state[f] ?? ''); renderItemsForm(); }
+
+  function renderItemsForm(){
+    const box = $('items'); box.innerHTML = '';
+    state.items.forEach((it,i) => {
+      const el = document.createElement('div');
+      el.className = 'item';
+      el.innerHTML = `
+        <label>Descripción</label>
+        <input data-k="desc" placeholder="Ej: Cable 2,5 mm">
+        <div class="row3" style="margin-top:8px">
+          <div><label>Cant.</label><input data-k="cant" type="number" min="0" step="any"></div>
+          <div><label>Unidad</label><input data-k="unidad" placeholder="u / m / m²"></div>
+          <div><label>Precio unit. $</label><input data-k="precio" data-money type="text" inputmode="decimal" autocomplete="off" placeholder="0"></div>
+          <button class="del" type="button" title="Quitar">✕</button>
+        </div>`;
+      el.querySelectorAll('input').forEach(inp => {
+        const k = inp.dataset.k;
+        if(inp.hasAttribute('data-money')){
+          inp.value = it[k] ? fmtMoneyInput(String(it[k]).replace('.',',')) : '';
+          inp.addEventListener('input', () => { formatLive(inp); it[k] = parseMoney(inp.value); update(); });
+          return;
+        }
+        inp.value = it[k] ?? '';
+        inp.addEventListener('input', () => { it[k] = (k==='cant') ? parseFloat(inp.value)||0 : inp.value; update(); });
+      });
+      el.querySelector('.del').onclick = () => { state.items.splice(i,1); renderItemsForm(); update(); };
+      box.appendChild(el);
+    });
+  }
+
+  const total = () => state.items.reduce((s,it) => s + (it.cant||0)*(it.precio||0), 0);
+  function validUntil(){
+    const d = parseISO(state.fecha); if(!d) return null;
+    d.setDate(d.getDate() + (parseInt(state.dias,10)||15)); return d;
+  }
+
+  function waText(){
+    const t = total(), pA = Math.min(100, Math.max(0, parseFloat(state.anticipo)||0));
+    return [
+      `*Presupuesto N° ${state.num} — ${biz.nombre || ''}*`,
+      `Hola ${state.cliente || ''}! Te paso el presupuesto:`,
+      '',
+      state.trabajo ? `🔧 ${state.servicio}: ${state.trabajo}` : `🔧 ${state.servicio}`,
+      ...state.items.filter(i=>i.desc||i.precio).map(i => `• ${i.desc} (${i.cant}${i.unidad?' '+i.unidad:''}): ${money(i.cant*i.precio)}`),
+      '',
+      `*Total: ${money(t)}*`,
+      `💳 ${pA}% al inicio: ${money(t*pA/100)}`,
+      `💳 ${100-pA}% al finalizar: ${money(t - t*pA/100)}`,
+      `Medio: ${state.medio}`,
+      state.plazo ? `⏱️ Plazo: ${state.plazo}` : null,
+      `📅 Válido hasta el ${fmtDate(validUntil())}`,
+      '',
+      'Cualquier duda, escribime 👍'
+    ].filter(l => l !== null).join('\n');
+  }
+
+  function update(){
+    fields.forEach(f => { state[f] = $(f).value; });
+    const t = total();
+    const pA = Math.min(100, Math.max(0, parseFloat(state.anticipo)||0));
+    const ant = t*pA/100;
+
+    $('vNum').textContent = 'N° ' + state.num;
+    $('vCliente').textContent = state.cliente || '—';
+    $('vClienteExtra').textContent = [state.tel, state.dir].filter(Boolean).join(' · ');
+    $('vFecha').textContent = fmtDate(parseISO(state.fecha));
+    $('vValidez').textContent = fmtDate(validUntil());
+    $('vServicio').textContent = state.servicio || '—';
+    $('vTrabajo').textContent = state.trabajo;
+    $('vTrabajoWrap').hidden = !state.trabajo;
+
+    const tb = $('vItems'); tb.innerHTML = '';
+    const rows = state.items.filter(it => it.desc || it.precio);
+    if(!rows.length) tb.innerHTML = '<tr><td colspan="4" class="empty">Agregá ítems en el detalle</td></tr>';
+    rows.forEach(it => {
+      const tr = document.createElement('tr');
+      const td = (txt,cls) => { const c = document.createElement('td'); c.textContent = txt; if(cls) c.className = cls; tr.appendChild(c); };
+      td(it.desc || '—'); td(`${it.cant}${it.unidad ? ' '+it.unidad : ''}`,'n'); td(money(it.precio),'n'); td(money(it.cant*it.precio),'n');
+      tb.appendChild(tr);
+    });
+
+    $('vTotal').textContent = money(t);
+    $('vLblA').textContent = `${pA}% al inicio del trabajo`;
+    $('vLblB').textContent = `${100-pA}% al finalizar`;
+    $('vAnt').textContent = money(ant);
+    $('vSal').textContent = money(t-ant);
+    $('vPagoExtra').textContent = [`Medio de pago: ${state.medio}.`, state.plazo ? `Plazo estimado: ${state.plazo}.` : ''].filter(Boolean).join('\n');
+    $('vNotas').textContent = state.notas;
+    $('vNotasWrap').hidden = !state.notas;
+
+    $('wa').href = `https://wa.me/${phoneAR(state.tel)}?text=${encodeURIComponent(waText())}`;
+    document.title = `Presupuesto ${state.num}${state.cliente ? ' - '+state.cliente : ''}`;
+    save();
+  }
+
+  $('addItem').onclick = () => { state.items.push({desc:'',cant:1,unidad:'',precio:0}); renderItemsForm(); update(); };
+  $('print').onclick = () => window.print();
+
+  // Confirmación en dos toques (sin diálogos del navegador)
+  let armed = null;
+  $('nuevo').onclick = () => {
+    const b = $('nuevo');
+    if(!armed){
+      b.textContent = '¿Seguro? Tocá de nuevo para borrar'; b.className = 'btn btn-danger full';
+      armed = setTimeout(() => { armed = null; b.textContent = 'Empezar uno nuevo'; b.className = 'btn btn-light full'; }, 3500);
+      return;
+    }
+    clearTimeout(armed); armed = null;
+    b.textContent = 'Empezar uno nuevo'; b.className = 'btn btn-light full';
+    state = blank(); fillForm(); update(); window.scrollTo({top:0,behavior:'smooth'});
+  };
+  fields.forEach(f => $(f).addEventListener('input', update));
+  fields.forEach(f => $(f).addEventListener('change', update));
+
+  // Guardado extra al cerrar, cambiar de pestaña o minimizar Chrome (clave en celulares)
+  const flush = () => { if(state) save(); if(biz) saveBiz(); };
+  window.addEventListener('pagehide', flush);
+  window.addEventListener('beforeunload', flush);
+  document.addEventListener('visibilitychange', () => { if(document.visibilityState === 'hidden') flush(); });
+
+  loadBiz(); fillBiz(); renderBiz();
+  load(); fillForm(); update();
+})();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+</script>
+</body>
+</html>
