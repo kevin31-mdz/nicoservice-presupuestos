@@ -186,6 +186,7 @@
     <div class="actions">
       <button class="btn btn-primary" id="print" type="button">🖨️ Descargar PDF</button>
       <a class="btn btn-wa" id="wa" href="#" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <button class="btn btn-light full" id="copiar" type="button">📋 Copiar texto</button>
       <button class="btn btn-light full" id="nuevo" type="button">Empezar uno nuevo</button>
     </div>
   </aside>
@@ -464,6 +465,17 @@
 
   $('addItem').onclick = () => { state.items.push({desc:'',cant:1,unidad:'',precio:0}); renderItemsForm(); update(); };
   $('print').onclick = () => window.print();
+
+  $('copiar').onclick = () => {
+    const btn = $('copiar');
+    navigator.clipboard.writeText(waText()).then(() => {
+      btn.textContent = '✅ ¡Copiado!';
+      setTimeout(() => { btn.textContent = '📋 Copiar texto'; }, 2500);
+    }).catch(() => {
+      btn.textContent = '❌ No se pudo copiar';
+      setTimeout(() => { btn.textContent = '📋 Copiar texto'; }, 2500);
+    });
+  };
 
   // Confirmación en dos toques (sin diálogos del navegador)
   let armed = null;
