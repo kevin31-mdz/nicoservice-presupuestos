@@ -1,7 +1,7 @@
 {
-  "name": "NicoService — Presupuestos",
-  "short_name": "NicoService",
-  "description": "Generador de presupuestos para NicoService",
+  "name": "Presupuestos Coira",
+  "short_name": "Presupuestos",
+  "description": "Generador de presupuestos de Agencia Coira",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0e4d64",
