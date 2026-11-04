@@ -93,6 +93,14 @@
   .doc-foot{background:#f6f8fa;border-top:1px solid var(--line);padding:12px 26px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center}
   .empty{color:var(--muted);font-style:italic}
   [hidden]{display:none!important}
+  .hist-item{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .hist-item:last-child{border-bottom:0}
+  .hist-btn{flex:1;min-width:0;text-align:left;border:0;background:none;cursor:pointer;padding:2px 0;font:inherit}
+  .hist-btn:hover .hist-name{color:var(--brand)}
+  .hist-name{font-weight:600;font-size:13px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hist-meta{color:var(--muted);font-size:11px;margin-top:2px}
+  .hist-del{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 7px;font-size:13px;border-radius:6px;flex:none}
+  .hist-del:hover{background:#fde8e8;color:#b42318}
   @media(max-width:560px){.doc-head,.doc-body{padding:18px}.pay{grid-template-columns:1fr}.item .row3{grid-template-columns:1fr 1fr}.doc-id{text-align:left}}
 
   @media print{
@@ -190,6 +198,11 @@
       <button class="btn btn-light full" id="copiar" type="button">📋 Copiar texto</button>
       <button class="btn btn-light full" id="nuevo" type="button">Empezar uno nuevo</button>
     </div>
+
+    <details class="cfg" id="histBox" style="margin-top:10px">
+      <summary>🗂️ Historial</summary>
+      <div class="in" id="histList"></div>
+    </details>
   </aside>
 
   <!-- ================= DOCUMENTO ================= -->
@@ -258,7 +271,8 @@
 <script>
 (() => {
   const $ = id => document.getElementById(id);
-  const KEY = 'ns_presupuesto_borrador', SEQ = 'ns_presupuesto_seq', BIZ = 'ns_negocio';
+  const KEY = 'ns_presupuesto_borrador', SEQ = 'ns_presupuesto_seq', BIZ = 'ns_negocio', HIST = 'ns_historial';
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const DEFAULT_TERMS = 'Los precios pueden ajustarse si el presupuesto se acepta después de la fecha de validez.\nCualquier trabajo adicional no detallado se presupuesta por separado.';
   const money = n => new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(Math.round(n||0));
   const pad = n => String(n).padStart(2,'0');
@@ -327,7 +341,6 @@
     $('vMono').textContent = name.replace(/([a-z])([A-Z])/g,'$1 $2').split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
     $('vTerms').textContent = biz.terms;
     const foot = $('vFoot'); foot.innerHTML = '';
-    const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const igSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:4px;position:relative;top:-1px"><defs><radialGradient id="ig-g" cx="30%" cy="107%" r="150%"><stop offset="0%" stop-color="#fdf497"/><stop offset="5%" stop-color="#fdf497"/><stop offset="45%" stop-color="#fd5949"/><stop offset="60%" stop-color="#d6249f"/><stop offset="90%" stop-color="#285AEB"/></radialGradient></defs><rect width="24" height="24" rx="5" fill="url(#ig-g)"/><rect x="1.5" y="1.5" width="21" height="21" rx="4" fill="none" stroke="white" stroke-width="1.5"/><circle cx="12" cy="12" r="5" fill="none" stroke="white" stroke-width="1.5"/><circle cx="18.5" cy="5.5" r="1.3" fill="white"/></svg>`;
     const addSpan = html => { const s = document.createElement('span'); s.innerHTML = html; foot.appendChild(s); };
     if(biz.zona) addSpan('📍 ' + esc(biz.zona));
@@ -482,10 +495,52 @@
     save();
   }
 
+  /* ---------- Historial ---------- */
+  function getHist(){ try{ return JSON.parse(store.get(HIST)) || [] }catch(e){ return [] } }
+
+  function saveToHistory(){
+    if(!state || !state.cliente || total() <= 0) return;
+    const h = getHist().filter(e => e.num !== state.num);
+    h.unshift({ num: state.num, cliente: state.cliente, fecha: state.fecha, total: total(), snap: JSON.stringify(state) });
+    store.set(HIST, JSON.stringify(h.slice(0, 50)));
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const list = $('histList');
+    const h = getHist();
+    if(!h.length){
+      list.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:6px 0 2px">Todavía no hay presupuestos guardados.</p>';
+      return;
+    }
+    list.innerHTML = '';
+    h.forEach(e => {
+      const el = document.createElement('div');
+      el.className = 'hist-item';
+      el.innerHTML = `
+        <button class="hist-btn" type="button">
+          <div class="hist-name">${esc(e.cliente)}</div>
+          <div class="hist-meta">N° ${esc(e.num)} · ${fmtDate(parseISO(e.fecha))} · ${money(e.total)}</div>
+        </button>
+        <button class="hist-del" type="button" title="Eliminar">✕</button>`;
+      el.querySelector('.hist-btn').onclick = () => {
+        try{ state = JSON.parse(e.snap); save(); fillForm(); update(); window.scrollTo({top:0,behavior:'smooth'}); }catch(ex){}
+      };
+      el.querySelector('.hist-del').onclick = () => {
+        store.set(HIST, JSON.stringify(getHist().filter(x => x.num !== e.num)));
+        renderHistory();
+      };
+      list.appendChild(el);
+    });
+  }
+
   $('addItem').onclick = () => { state.items.push({desc:'',cant:1,unidad:'',precio:0}); renderItemsForm(); update(); };
-  $('print').onclick = () => window.print();
+  $('print').onclick = () => { saveToHistory(); window.print(); };
+
+  $('wa').addEventListener('click', saveToHistory);
 
   $('copiar').onclick = () => {
+    saveToHistory();
     const btn = $('copiar');
     navigator.clipboard.writeText(waText()).then(() => {
       btn.textContent = '✅ ¡Copiado!';
@@ -507,6 +562,7 @@
     }
     clearTimeout(armed); armed = null;
     b.textContent = 'Empezar uno nuevo'; b.className = 'btn btn-light full';
+    saveToHistory();
     state = blank(); fillForm(); update(); window.scrollTo({top:0,behavior:'smooth'});
   };
   fields.forEach(f => $(f).addEventListener('input', update));
@@ -520,6 +576,7 @@
 
   loadBiz(); fillBiz(); renderBiz();
   load(); fillForm(); update();
+  renderHistory();
 })();
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
 </script>
