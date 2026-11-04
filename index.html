@@ -506,7 +506,7 @@
   function saveToHistory(){
     if(!state || !state.cliente || total() <= 0) return;
     const h = getHist().filter(e => e.num !== state.num);
-    h.unshift({ num: state.num, cliente: state.cliente, fecha: state.fecha, total: total(), snap: JSON.stringify(state) });
+    h.unshift({ num: state.num, cliente: state.cliente, fecha: state.fecha, servicio: state.servicio || '', total: total(), snap: JSON.stringify(state) });
     store.set(HIST, JSON.stringify(h.slice(0, 50)));
     renderHistory();
   }
@@ -526,7 +526,7 @@
       el.innerHTML = `
         <button class="hist-btn" type="button">
           <div class="hist-name">${esc(e.cliente)}</div>
-          <div class="hist-meta">N° ${esc(e.num)} · ${fmtDate(parseISO(e.fecha))} · ${money(e.total)}</div>
+          <div class="hist-meta">N° ${esc(e.num)} · ${fmtDate(parseISO(e.fecha))}${e.servicio ? ' · '+esc(e.servicio) : ''} · ${money(e.total)}</div>
         </button>
         <button class="hist-del" type="button" title="Eliminar">✕</button>`;
       el.querySelector('.hist-btn').onclick = () => {
@@ -541,7 +541,7 @@
     $('histMail').onclick = () => {
       const h2 = getHist();
       const totalSum = h2.reduce((s,e) => s + e.total, 0);
-      const lines = h2.map(e => `N° ${e.num}  |  ${e.cliente}  |  ${fmtDate(parseISO(e.fecha))}  |  ${money(e.total)}`);
+      const lines = h2.map(e => `N° ${e.num}  |  ${e.cliente}  |  ${e.servicio || '—'}  |  ${fmtDate(parseISO(e.fecha))}  |  ${money(e.total)}`);
       const hoy = new Date().toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'});
       const body = [`Resumen de presupuestos — ${biz.nombre || ''}`, `Generado el ${hoy}`, '', ...lines, '', `TOTAL: ${money(totalSum)}`].join('\n');
       window.location.href = `mailto:?subject=${encodeURIComponent('Resumen presupuestos — ' + (biz.nombre || ''))}&body=${encodeURIComponent(body)}`;
